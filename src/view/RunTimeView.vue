@@ -1,25 +1,34 @@
 <template>
-  <v-app>
-    <v-content>
-      <ProtocolTree :protocol="protocol" :source="source"/>
-    </v-content>
-  </v-app>
+  <div>
+      <v-row>
+        <v-col cols='3'>
+          <ProtocolTree :items="protocols" @change="selectChange"/>
+        </v-col>
+        <v-col>
+          <DataTable :headers="headers" :items="items"/>
+        </v-col>
+      </v-row>
+  </div>
 </template>
 
 <script>
 import ProtocolTree from '@/components/ProtocolTree';
+import DataTable from '@/components/DataTable';
 import axios from 'axios'
 
 axios.defaults.baseURL = "http://192.168.3.215:47112"
 
 export default {
   components:{
-    ProtocolTree
+    ProtocolTree,
+    DataTable,
   },
   data(){
     return{
-        protocol:[],
-        source:{data:[]},
+        protocols:[],
+        headers:[],
+        items:[],
+        curPage:1,
     }
   },
   created(){
@@ -27,11 +36,15 @@ export default {
     this.getSource();
   },
   methods:{
+    selectChange(v)
+    {
+      this.headers = v;
+    },
     getProtocols()
     {
         axios.get("/api/recorded/protocols")
           .then(res=>{
-            this.protocol = res.data.data;
+            this.protocols = res.data.data;
         });
     },
     getSource()
@@ -52,7 +65,7 @@ export default {
               }
               data.push(row);
             }
-            this.source.data = data;   
+            this.items = data;
         });
     }
   }
