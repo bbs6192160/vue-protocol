@@ -1,18 +1,31 @@
 <template>
     <div>
-        <ProjectTree :items="items" @change="selectChange"/>
+        <v-row>
+            <v-col cols="3">
+                <ProjectTree :items="items" @change="selectChange"/>
+                <ProtocolTree :items="protocols" @change="protocolChange"/>
+            </v-col>
+            <v-col>
+                <DataTable :headers="headers" :items="source"/>
+            </v-col>
+        </v-row>
     </div>
 </template>
 <script>
 import shortid from "shortid"; // for tree id
 import axios from "axios"
+
 import ProjectTree from "@/components/ProjectTree"
+import ProtocolTree from '@/components/ProtocolTree';
+import DataTable from '@/components/DataTable';
 
 axios.defaults.baseURL = "http://192.168.3.215:47112"
 
 export default {
     components:{
-        ProjectTree
+        ProjectTree,
+        ProtocolTree,
+        DataTable,
     },
     watch:{
         projects(v)
@@ -35,7 +48,26 @@ export default {
     methods:{
         selectChange(item)
         {
-            console.log(item);
+            //console.log(item);
+            if(item.id){
+                this.getSource(item.id);
+                this.getProtocols(item.id);
+            }else{
+                //重置数据
+                this.source = [];
+                this.protocols = [];
+            }
+        },
+        protocolChange(item)
+        {
+            this.headers = item;
+        },
+        getProtocols(id)
+        {
+            axios.get(`/api/recorded/protocols?runtime=${id}`)
+            .then(res=>{
+                this.protocols = res.data.data;
+            });
         },
         getRuntimes()
         {
@@ -59,7 +91,7 @@ export default {
                         this.$set(this.projects,item.project,[])
                     this.projects[item.project].push(item);
                 }
-                console.log(this.projects);
+                //console.log(this.projects);
             });
         },
         findTestCase(items,testcase)
@@ -74,6 +106,27 @@ export default {
             items.push(res);
             return res;
         },
+        getSource(idx)
+        {
+            axios.get(`/api/recorded/records?runtime=data_${idx}`)
+            .then(res=>{
+                //window.console.log(res.data.data);
+                let data = [];
+                for(let it of res.data.data)
+                {
+                    let row = {};
+                    this.$set(row,"time",it.timestamp);
+                    //获取协议值
+                    let protocol = it[it.path];
+                    for(let field in protocol){
+                        let name = it.path + "-" + field;
+                        this.$set(row,name,protocol[field]);
+                    }
+                    data.push(row);
+                }
+                this.source = data;
+            });            
+        }
     },
     created(){
         this.getRuntimes();
@@ -83,6 +136,9 @@ export default {
         return{
             items:[],
             projects:{},
+            headers:[],
+            source:[],
+            protocols:[],
         }
     }
 }

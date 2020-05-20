@@ -27,10 +27,6 @@ export default {
             }
             this.$emit("change",res);
         },
-        // open(v)
-        // {
-        //     console.log(v);
-        // },
         project(v)
         {
             //打开所有的用例节点

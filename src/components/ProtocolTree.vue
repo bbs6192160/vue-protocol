@@ -1,17 +1,16 @@
 <template>
   <div>
+      <!-- item-key="name" -->
     <v-treeview 
-        v-if="showTree"
         v-model="selection"
         :items="protcolTree"
         :active.sync="active"
         :open.sync="open"
         item-key="name"
-        
+
         selectable
         return-object
         open-on-click
-        open-all
         dense
     ></v-treeview>
   </div>
@@ -25,16 +24,22 @@ export default {
         protcolTree(v){
             //协议树更新,然后 selection选中所有的protcolTree
             //window.console.log(v);
+            let selection = [];
             for(let it of v){
                 for(let children of it.children){
-                this.selection.push(children);
+                    selection.push(children);
                 }
             }
-            //获取到数据后才去渲染组件
-            this.showTree = true;
+            let open = [];
+            //打开所有根节点
+            for(let it of v){
+                open.push(it);
+            }
+            this.selection = selection;
+            this.open = open;
         },
         selection(v){
-            window.console.log(v);
+            //window.console.log(v);
             let res = [];
             for(let it of v){
                 res.push(it.name)
@@ -50,15 +55,14 @@ export default {
             return res;
             for(let prot of this.items){
                 let d = {name:prot.name,children:[]};
-                if(prot.segments)
-                {
+                if(prot.segments){
                     for(let field of prot.segments){
                     let children = {name:prot.name + '-' + field.name}
                     d.children.push(children);
                     }
                 }
-                    res.push(d);
-                }
+                res.push(d);
+            }
             return res;
         },
     },
@@ -67,7 +71,6 @@ export default {
             selection:[],
             active:[],
             open:[],
-            showTree:false,
         }
     }
 }
