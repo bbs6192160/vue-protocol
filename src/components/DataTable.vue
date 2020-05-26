@@ -4,26 +4,28 @@
             :headers="_headers"
             :items="_items"
             :items-per-page="_perPage"
-            :page.sync="page"
+            hide-default-footer
             class="elevation-1"
+            @page-count="pageCount = $event"
         ></v-data-table>
+        <v-pagination v-model="page" v-if="length" :length="length" total-visible="10"></v-pagination>
     </div>
 </template>
 <script>
+//:page.sync="page"
+//@page-count="pageCount = $event"
 export default {
-    props:['headers','items','perPage'],
+    props:['headers','items','perPage','length'],
     watch:{
-        _items(v)
+        page(v)
         {
-            //获取数据后,默认跳转到最后一页
-            let page = 1;
-            let len = v.length;
-            if(len){
-                page = len / this._perPage;
-                if(len % this._perPage)
-                    page++;
-            }
-            this.page = page;
+            //console.log(v);
+            this.$emit("change",v);
+        },
+        length(v)
+        {
+            //跳转到最后一页
+            this.page = v;
         }
     },
     computed:{
@@ -50,27 +52,11 @@ export default {
                 return this.perPage;
             return 20;
         },
-        _lastPage()
-        {
-            let res = 1;
-            let len = this._items.length;
-            if(len){
-                res = len / this._perPage;
-                if(len % this._perPage)
-                    res++;
-            }
-            return res;
-        },
-    },
-    methods:{
-        LastPage()
-        {
-            this.page = this._lastPage();
-        },
     },
     data(){
         return{
-            page:1,
+            page:this.initPage?this.initPage:1,
+            pageCount:0,
         }
     }
 }

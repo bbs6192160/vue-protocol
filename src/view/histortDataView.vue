@@ -6,7 +6,7 @@
                 <ProtocolTree :items="protocols" @change="protocolChange"/>
             </v-col>
             <v-col>
-                <DataTable :headers="headers" :items="source"/>
+                <DataTable :headers="headers" :items="source" :length="pageCount" @change="PageChange"/>
             </v-col>
         </v-row>
     </div>
@@ -49,22 +49,30 @@ export default {
         selectChange(item)
         {
             //console.log(item);
+            this.curRuntime = item.id;
             if(item.id){
-                this.getSource(item.id);
-                this.getProtocols(item.id);
+                this.getSourceSize();
+                this.getSource();
+                this.getProtocols();
             }else{
                 //重置数据
                 this.source = [];
                 this.protocols = [];
+                this.pageCount = 0;
             }
         },
         protocolChange(item)
         {
             this.headers = item;
         },
-        getProtocols(id)
+        PageChange(v)
         {
-            axios.get(`/api/recorded/protocols?runtime=${id}`)
+            this.page = v;
+            this.getSource()
+        },
+        getProtocols()
+        {
+            axios.get(`/api/recorded/protocols?runtime=${this.curRuntime}`)
             .then(res=>{
                 this.protocols = res.data.data;
             });
@@ -106,9 +114,18 @@ export default {
             items.push(res);
             return res;
         },
-        getSource(idx)
+        getSourceSize()
         {
-            axios.get(`/api/recorded/records?runtime=data_${idx}`)
+            axios.get(`/api/recorded/records/size?runtime=${this.curRuntime}`)
+            .then(res=>{
+                //window.console.log(res.data.data);
+                let size = res.data.data.size;
+                this.pageCount = Math.ceil(size / this.perPage);
+            });
+        },
+        getSource()
+        {
+            axios.get(`/api/recorded/records?runtime=${this.curRuntime}&index=${this.perPage*(this.page -1 )}&limit=${this.perPage}`)
             .then(res=>{
                 //window.console.log(res.data.data);
                 let data = [];
@@ -139,6 +156,10 @@ export default {
             headers:[],
             source:[],
             protocols:[],
+            curRuntime:"",
+            page:1,
+            pageCount:0,
+            perPage:50,
         }
     }
 }

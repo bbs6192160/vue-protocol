@@ -29,6 +29,7 @@ export default {
         headers:[],
         items:[],
         curPage:1,
+        reqParams:{refresh:'true',from:0,index:0,limit:-50},
     }
   },
   created(){
@@ -49,25 +50,33 @@ export default {
     },
     getSource()
     {
-        axios.get("/api/recorded/records?runtime=seg_test")
+        axios.get("/api/recorded/records",{params:this.reqParams})
           .then(res=>{
-            //window.console.log(res.data.data);
-            let data = [];
-            for(let it of res.data.data)
+            window.console.log(res.data);
+            if(res.data.upperIdx)
+              this.reqParams.index =  res.data.upperIdx;
+            console.log(this.reqParams.index);
+            if(res.data.data.length)
             {
-              let row = {};
-              this.$set(row,"time",it.timestamp);
-              //获取协议值
-              let protocol = it[it.path];
-              for(let field in protocol){
-                let name = it.path + "-" + field;
-                this.$set(row,name,protocol[field]);
+              let data = [];
+              for(let it of res.data.data)
+              {
+                let row = {};
+                this.$set(row,"time",it.timestamp);
+                //获取协议值
+                let protocol = it[it.path];
+                for(let field in protocol){
+                  let name = it.path + "-" + field;
+                  this.$set(row,name,protocol[field]);
+                }
+                data.push(row);
               }
-              data.push(row);
+              this.items = data;
             }
-            this.items = data;
+            //继续刷新
+            this.getSource();
         });
-    }
+    },
   }
 }
 </script>
