@@ -5,7 +5,7 @@
           <ProtocolTree :items="protocols" @change="selectChange"/>
         </v-col>
         <v-col>
-          <DataTable :headers="headers" :items="items"/>
+          <DataTable :headers="headers" :items="items" :perPage="perPage"/>
         </v-col>
       </v-row>
   </div>
@@ -28,8 +28,9 @@ export default {
         protocols:[],
         headers:[],
         items:[],
-        curPage:1,
-        reqParams:{refresh:'true',from:0,index:0,limit:-50},
+        perPage:20,
+        revData:[],
+        reqParams:{refresh:'true',from:0,index:0},
     }
   },
   created(){
@@ -52,13 +53,12 @@ export default {
     {
         axios.get("/api/recorded/records",{params:this.reqParams})
           .then(res=>{
-            window.console.log(res.data);
+            //window.console.log(res.data);
             if(res.data.upperIdx)
               this.reqParams.index =  res.data.upperIdx;
-            console.log(this.reqParams.index);
+            //console.log(this.reqParams.index);
             if(res.data.data.length)
             {
-              let data = [];
               for(let it of res.data.data)
               {
                 let row = {};
@@ -69,9 +69,9 @@ export default {
                   let name = it.path + "-" + field;
                   this.$set(row,name,protocol[field]);
                 }
-                data.push(row);
+                this.revData.push(row);
               }
-              this.items = data;
+              this.items = this.items.concat(this.revData).slice(-this.perPage);
             }
             //继续刷新
             this.getSource();

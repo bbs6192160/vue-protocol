@@ -6,7 +6,7 @@
                 <ProtocolTree :items="protocols" @change="protocolChange"/>
             </v-col>
             <v-col>
-                <DataTable :headers="headers" :items="source" :length="pageCount" @change="PageChange"/>
+                <DataTable :headers="headers" :items="source" :perPage="perPage"  :length="pageCount" @change="PageChange"/>
             </v-col>
         </v-row>
     </div>
@@ -159,7 +159,7 @@ export default {
             curRuntime:"",
             page:1,
             pageCount:0,
-            perPage:50,
+            perPage:30,
         }
     }
 }
