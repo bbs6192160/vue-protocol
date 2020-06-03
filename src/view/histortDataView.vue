@@ -52,7 +52,6 @@ export default {
             this.curRuntime = item.id;
             if(item.id){
                 this.getSourceSize();
-                this.getSource();
                 this.getProtocols();
             }else{
                 //重置数据
@@ -67,8 +66,10 @@ export default {
         },
         PageChange(v)
         {
-            this.page = v;
-            this.getSource()
+            if(this.page != v){
+                this.page = v;
+                this.getSource()
+            }
         },
         getProtocols()
         {
@@ -121,6 +122,9 @@ export default {
                 //window.console.log(res.data.data);
                 let size = res.data.data.size;
                 this.pageCount = Math.ceil(size / this.perPage);
+                //获取最后一页的数据
+                this.page = this.pageCount;
+                this.getSource();
             });
         },
         getSource()
@@ -159,7 +163,7 @@ export default {
             curRuntime:"",
             page:1,
             pageCount:0,
-            perPage:30,
+            perPage:20,
         }
     }
 }

@@ -54,8 +54,11 @@ export default {
         axios.get("/api/recorded/records",{params:this.reqParams})
           .then(res=>{
             //window.console.log(res.data);
-            if(res.data.upperIdx)
+            if(res.data.upperIdx){
+              if(res.data.upperIdx <= this.reqParams.index)
+                this.getProtocols();//刷新协议
               this.reqParams.index =  res.data.upperIdx;
+            }
             //console.log(this.reqParams.index);
             if(res.data.data.length)
             {
@@ -65,6 +68,7 @@ export default {
                 this.$set(row,"time",it.timestamp);
                 //获取协议值
                 let protocol = it[it.path];
+                if(!protocol)
                 for(let field in protocol){
                   let name = it.path + "-" + field;
                   this.$set(row,name,protocol[field]);
